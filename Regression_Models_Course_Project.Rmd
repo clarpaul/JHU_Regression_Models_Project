@@ -1,0 +1,146 @@
+---
+title: "Regression Models Course Project"
+author: "Paul Clark"
+date: "March 5, 2017"
+output:
+  pdf_document:
+    fig_caption: yes
+    includes:
+      in_header: preamble-latex.tex
+    number_sections: yes
+  html_notebook:
+    fig_caption: yes
+    number_sections: yes
+---
+
+# Executive Summary
+
+For its 1974 edition, US magazine *Motor Trend* has asked that we address two questions using a data set on fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973-74 models).
+
+  1.  “Is an automatic or manual transmission better for MPG?”
+  2.  "How does MPG differ, quantitatively, between automatic and manual transmissions?"
+
+  >  [, 1]	 mpg	 Miles/(US) gallon  
+  >  [, 2]	 cyl	 Number of cylinders  
+  >  [, 3]	 disp	 Displacement (cu.in.)  
+  >  [, 4]	 hp	 Gross horsepower  
+  >  [, 5]	 drat	 Rear axle ratio  
+  >  [, 6]	 wt	 Weight (1000 lbs)  
+  >  [, 7]	 qsec	 1/4 mile time  
+  >  [, 8]	 vs	 V/S (engine: 0 = V-type, 1 = In-line)  
+  >  [, 9]	 am	 Transmission (0 = automatic, 1 = manual)  
+  >  [,10]	 gear	 Number of forward gears  
+  >  [,11]	 carb	 Number of carburetors  
+
+We address the questions via two types of models:  
+
+  a.  Regressing `mpg` on `am` alone, with inferences about the difference in mean `mpg` equivalent to those of a two-sample t-test
+  b.  Adjustment of the `am` effect observed in **(a)** by including other variables correlated with `mpg`
+
+We conclude from model **(a)** that the two groups of cars come from populations with strongly and statistically different means. If the data provided is representative of the overall population, then *manual* transmission cars have an estimtaed mean `mpg` 7.2 MPG higher than *automatic* cars.  
+
+From model **(b)**, we have two main conclusions: (1) the adjustments of the `am` effect that best predict `mpg` are `hp` and `wt`, i.e., $E[mpg] = M\cdot am + H\cdot hp + W\cdot wt$; (2) the *automatic/manual* effect $M$, with *horsepower* and *weight* held fixed, is approximately _____ mpg, with manual cars again having higher `mpg` than automatic cars.
+
+# Data Processing
+
+We treat `vs` and `am` as factor variables, but for simplicity treat all other variables as linear predictors.
+```{r variable_definition}
+data(mtcars)
+mtcars$vs <- factor(x = as.character(mtcars$vs), levels = c("0","1"), labels = c("v","s"))
+mtcars$am <- factor(x = as.character(mtcars$am), levels = c("0","1"), 
+                    labels = c("auto","manual"))
+```
+
+# MPG vs. Transmission Type: Two-Sample T-Test
+
+A violin plot shows that within this dataset, `mpg` varies strongly with `am`.
+```{r marginal_mpg_diff, cache = TRUE, message=FALSE}
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manual']) - mean(mpg[am == 'auto']))
+```
+
+The cars with manual transmission have average mileage `r round(mpg_delta_grp,2)` mpg higher than cars with automatic. We compute the p-value and confidence interval for the hypothesis that manual transmission is higher.  
+```{r t_test}
+# use alternative 'less'; t.test uses the second factor as baseline
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+```
+
+```{r t_output, echo = FALSE}
+cat(sep = "", "Mean sample MPG by which manual exceeds automatic transmission = ", 
+    round(mpg_delta_grp,2), "\n", "p-value = ", 
+    round(100*(t_test$p.value),2), "%\n", "95% ", "conf.int = ", 
+    round(-t_test$conf.int[2],2), " to ", -t_test$conf.int[1],"\n")
+```
+In other words, if the difference in `mpg` was 0 and normally distributed (the null hypothesis) it would it would be greater than `r round(-t_test$conf.int[2],2)` only 5% of the time.  So, we are highly confident that these samples are drawn from different populations, and that the manual transmission has higher fuel economy.  This is the first and simplest answer to *Motor Trend's* questions. 
+
+# Discussion
+
+Approach **(b)** to answering *Motor Trend's* questions is underspecified. Many different models could be used to address them.  The most "correct" choice depends on which of the 10 variables **Motor Trend** wants considered as predictors.  They want to look at the impact of transimssion type on gas mileage, but they have not said what other variables are of most interest.  With 9 variable to choose from, traditional hypothesis testing involving F-tests for small sets of nested models, as discussed in the JHU Coursera *Regression Models* class, is not viable: one would need to evaluate at least $2^{9} = 512$ models involving single linear predictors, or $2^{9+36}$ = `r round((2^(9+36))/(10e11),0)` trillion total models, if pairwise interactions are also considered. It is not even clear how or if such a process could be properly structured and executed.  Therefore, in order to fully specify approach **(b)**, we make the following additional assumptions about **Motor Trend's** interests.
+
+
+
+# Assumptions
+
+**Motor Trend** will evaluate the model in approach **(b)** based on the following criteria, in priority order:
+
+  A.  Parsimony and simplicity
+  B.  Model statement in terms of granular, causal variables that will help readers understand engineering trade-offs underlying fuel economy
+  C.  Predictiveness - potential to generalize well outside the training sample
+
+
+Therefore we consider only terms linear in the provided predictors.
+
+Therefore we make use of a model search approach that evaluates all models' predictive capability. As criterion, we employ corrected AIC, or "**AICc**", which is AIC corrected for small sample sizes.  
+Instead, we suggest automated model search based on a ranking criterion for model predictiveness.
+
+Therefore we exclude `qsec`, the time to drive a quarter-mile at max acceleration from a dead stop, from consideration as a predictor.
+
+
+# Exploratory Data Analysis
+
+## Pairs plot
+We do a pairs plot (see Figure __, *Pairs Plot*) to review correlations between variables and substantiate assumptions, where possible. The correlations given in the pairs plot provides evidence for assumptions (2) and (3).
+
+
+# Model Selection
+
+## Strategy
+Given the choices made under *Assumptions*, we have the following adjusments to be considered to the marginal impact of `am` on `mpg`: `cyl`, `drat`, `wt`, `vs`, `gear`, `carb`.  Our strategy is to first consider essential metrics of power (`cyl`) and weight (`wt`), then use F-tests to consider the value of adding less obvious predictors.  
+
+## Model Fitting
+
+We first consider a model involving `am` alone, then determine how to incorporate `cyl` and/or `wt`:
+
+Adding `wt` seems to totally 'swamp' any effect of `am`. From our pairs plot, manual transmission cars are mostly much lighter than automatic cars. Including `wt` makes `am` unnecessary, and `wt` is also strongly correlated with `cyl`.  With only `r nrow(mtcars)` data points, we may not be able to adjust for weight at fixed `am` and number of cylinders `cyl`. Therefore, we include only `cyl` in the model, then test for inclusion of the other variables.
+
+
+## Model Diagnostics
+
+# Inference
+
+## Coefficients
+
+## Uncertainty
+
+# Conclusions
+
+# Figures
+
+```{r violin_plot, fig.cap="Violin plot of mpg vs. transmission type", echo = FALSE, message = FALSE}
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g_violin <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() + 
+        geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+        stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(fill = am)) +
+        scale_fill_discrete(name="Mean MPG")+
+        labs(title = "Average MPG for manual transmissions is significantly higher")
+print(g_violin)
+```
+
+```{r pairs_plot, cache = TRUE, message = FALSE, fig.cap="Pairs Plot of Motor Trend Cars Database", echo = FALSE}
+if (!"GGally" %in% rownames(installed.packages())) {install.packages("GGally")}
+library(GGally)
+g_pairs <- ggpairs(mtcars, lower = list(continuous = wrap(ggally_smooth, color = "blue")),
+           diag = list(continuous = "barDiag"), upper = list(continuous = wrap(ggally_cor,
+                                        size = 3, color = "blue")), axisLabels = 'none')
+print(g_pairs)
+```
