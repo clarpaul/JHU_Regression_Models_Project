@@ -81,23 +81,23 @@ bmdf[which(bmdf == " NA", arr.ind = TRUE)] <- "   "
 bmdf
 ```
 
-## Model Inference
+## Model Inference & Interpretation of Coefficients
 
 We investigate values of the `am` coefficient for the top models. Note the first 3 all round to 2, suggesting this is a good rough estimate of the adjusted transmission effect. Although our top model is only one AICc point lower than the next best model (model averaging is suggested via the weights, for differences less than 2), we focus attention on it, in the spirit of Assumption **(A)**.
 ```{r coeftable_best, echo = FALSE, comment=""}
 cotbls <- coefTable(bestmodels)
 round(cotbls[["322"]][,1:2], 2)
 ```
-The table contains no p-values, as after a search of $2^9$ models, these would be inflated (we expect 'good' p-values often, by chance alone).  However, standard errors are provided.  These indicate `hp` and `wt` are relatively significant, whereas significance of the the `am` coefficient, `r round(cotbls[['322']][2,1],1)`, is low. The *Estimate* divided by the *Std. Error*, typically used as the t-statistic, is only `r round(cotbls[['322']][2,1]/cotbls[['322']][2,2],1)`. Two is typically the significance threshold.  However, the $R^2$ of the top model is `r round(100*summary(bestmodel <- lm(mpg ~ am + hp + wt, mtcars))$r.squared, 0)`%: it explains a high degree of sample variance with only 3 covariates.
+The table contains no p-values, as after a search of $2^9$ models, these would be inflated (we expect 'good' p-values often, by chance alone).  However, standard errors are provided.  These indicate `hp` (showing 0.04 decrease in MPG per 1 HP increase, 4 MPG per 100 HP!) and `wt` (showing 3 MPG decrease in MPG per 1000 lbs) are relatively significant, whereas significance of the the `am` coefficient, `r round(cotbls[['322']][2,1],1)`, is low. The *Estimate* divided by the *Std. Error*, typically used as the t-statistic, is only `r round(cotbls[['322']][2,1]/cotbls[['322']][2,2],1)`. Two is typically the significance threshold.  However, the $R^2$ of the top model is `r round(100*summary(bestmodel <- lm(mpg ~ am + hp + wt, mtcars))$r.squared, 0)`%: it explains a high degree of sample variance with only 3 covariates.
 
 ## Model Diagnostics
 
-We run base R's standard diagnostic plots, **Figure 4**.  Though the smoother line in the *Residuals vs Fitted* plot shows curvature, pointing to possible quadratic terms, the trend is not pronounced except for the 3 labeled points (*Toyota Corolla, Fiat 128,* and *Chrysler Imperial*). These have notably higher MPG than the trend. The *Normal Q-Q* plot shows a somewhat right skewed distribution. But the deviations are not extreme, except for the 3 labeled points, and the lowest.  The lowest, given by the code below, is *Mazda RX4*.
+We run base R's standard plots in **Figure 4**.  Though the smoother line in *Residuals vs Fitted* shows curvature, pointing to possible quadratic terms, the trend is not pronounced except for the 3 labeled points (*Toyota Corolla, Fiat 128,* and *Chrysler Imperial*). These have notably higher MPG than the trend. *Normal Q-Q*  shows a somewhat right skewed distribution. But the deviations are not extreme, except for the 3 labeled points, and the lowest.  The lowest, given by the code below, is *Mazda RX4*.
 ```{r non_normal_pt, comment="", results='hide'}
 bestmodel<-lm(mpg~am+hp+wt,mtcars); row.names(mtcars)[which.min(bestmodel$residuals)]
 ```
-The *Scale-Location* plot shows no strong heteroskedasticity.  Cars getting 25-30 MPG are few, therefore the smoother line has large standard error there.  In the *Residuals vs Leverage* plot, all points are inside of 0.5 in *Cook's distance*, indicating relative stability of the $\beta s$.  Finaly, from package `car`, we use `vif()` to calculate the Variance Inflation Factors, to evaluate collinearity. They are all under 4, causing no reason for alarm (code suppressed to conserve space). VIFs:
-```{r vifs, echo = FALSE}
+*Scale-Location* shows no strong heteroskedasticity.  Cars with 25-30 MPG are few, therefore the smoother line is not meaningful there.  In *Residuals vs Leverage*, all points are inside 0.5 *Cook's distance*, indicating stable $\beta$s.  Finaly, from package `car`, we use `vif()` to calculate the Variance Inflation Factors amd evaluate collinearity. All are under 5, causing no alarm (code suppressed to conserve space). VIFs:
+```{r vifs, echo = FALSE, comment=""}
 if (!"car" %in% row.names(installed.packages())) {install.packages("car")}
 library(car); vif(bestmodel)
 ```
