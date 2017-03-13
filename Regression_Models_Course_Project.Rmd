@@ -26,7 +26,9 @@ We address the questions via two approaches: **Approach (a)** *- Calculation of 
 
 We conclude from **Approach (a)** that the two groups of cars come from populations with statistically different means. If the data provided is representative, then *manual* transmission cars generally have an estimated mean gas mileage **7.2 MPG** higher than *automatic* cars.  
 
-From **Approach (b)**, we have two main conclusions: **(1)** the adjustments of the `am` effect that most help predict `mpg` are `hp` and `wt`, both negative, corresponding to model $\textbf{E[mpg] = M}\cdot am + \textbf{H}\cdot hp + \textbf{W}\cdot wt$; **(2)** the *automatic/manual* effect $M$, with *horsepower* and *weight* held fixed, is approximately **2 MPG**, with manual again having higher `mpg` than automatic.  Other engineered effects are the sources of far more of the difference in `mpg` (**5 MPG** worth) than transmission type alone. 
+From **Approach (b)**, we have two main conclusions: **(1)** the adjustments of the `am` effect that most help predict `mpg` are `hp` and `wt`, both negative, corresponding to model $\textbf{E[mpg] = M}\cdot am + \textbf{H}\cdot hp + \textbf{W}\cdot wt$; **(2)** the *automatic/manual* effect $M$, with *horsepower* and *weight* held fixed, is approximately **2.1 MPG**, with manual again having higher `mpg` than automatic.  Other engineered effects are the sources of more of the difference in `mpg` (**5 MPG** worth) than transmission type alone. Increased engine `hp` accounts for a decrease of 3.7 MPG per hundred HP, and increased weight accounts for a decrease of 2.9 MPG per thousand lbs.
+
+Finally, due to low significance of the `am` coefficient (**Std. Error** of 1.4), we also investigated other models not constrained to include `am`. The best of these was $\textbf{E[mpg] = C}\cdot cyl + \textbf{W}\cdot wt$, with effect sizes of $C$ = 1.5 MPG decrease per cylinder, and $W$ = 3.2 MPG decrease per thousand lbs of weight.  Note the rough consistency of the `wt` effect across the two models: it is again around 3 MPG.
 
 # Exploratory Data Analysis
 In **Figure 1**, we examine integer predictors to decide whether to treat them as factors. We find value in treating `cyl` and `carb` as continuous: they show clear trends vs. other variables. And from a pairs plot, **Figure 2**, we see many strong correlations, so model selection should consider variance inflation.
@@ -56,7 +58,7 @@ We assume *Motor Trend* values: **(A)** Parsimony/simplicity; **(B)** Models wit
 
 ## Model Search
 
-Due to **(A)**, we consider no interactions.  From **(B)**, we exclude `qsec`, a summary metric.  Due to **(C)**, we rank models using the **AIC** metric, which estimates model predictiveness outside the training sample.  For OLS regression, the metric is $n\cdot Log(\sum_{i=1}^n(y_{i}- \hat{y}_{i})^2) + 2k$, where $k =$ # of parameters, an overfitting penalty.  In fact, we use **AICc**, which corrects the penalty to be greater for small $n$. We use automated search to make evaluation of all $2^9$ models feasible. Models are ranked from smallest to largest AICc.  Only non-zero coefficients are shown, and only models with the variable of interest (`am`) are evaluated.
+Due to **(A)**, we consider no interactions.  From **(B)**, we exclude `qsec`, a summary metric.  Due to **(C)**, we rank models using the **AIC** metric, which estimates model predictiveness outside the training sample.  For OLS regression, the metric is $n\cdot Log(\frac{\sum_{i=1}^n(y_{i}- \hat{y}_{i})^2}{n}) + 2k$, where $k =$ # of parameters including estimate of residual error, an overfitting penalty.  In fact, we use **AICc**, which corrects the penalty to be greater for small $n$ by adding a term $\frac{2k(k + 1)}{{n}-{k}-1}$ (note that this term varies based on model structure; this version only holds for Gaussian models). We use automated search to make evaluation of all $2^9$ models feasible. Models are ranked from smallest to largest AICc.  Only non-zero coefficients are shown, and only models with the variable of interest (`am`) are evaluated.
 
 ```{r model_search, warning = FALSE, message=FALSE, comment="", results='hide'}
 if (!"MuMIn" %in% row.names(installed.packages())) {install.packages("MuMIn")}
@@ -65,20 +67,31 @@ globalmodel <- lm(mpg ~ ., data = mtcars, na.action = na.fail)
 bestmodels <- dredge(globalmodel, subset = ~ am) # only considers models with `am`
 bestmodels[1:5,]
 ```
-```{r process_model_matrix, echo = FALSE, comment=""}
+```{r format_the_model_matrix, echo = FALSE, comment=""}
 bmdf <- as.data.frame(bestmodels[1:5, ])
 bmdf$disp <- NULL
 bmdf$drat <- NULL
 bmdf$gear <- NULL
-bmdf[,c(1:4,6:11)] <- round(bmdf[,c(1:4,6:11)],1)
+# bmdf[,c(1:2,4,6:11)] <- round(bmdf[,c(1:2,4,6:11)],1)
+bmdf[,c(1,6:11)] <- round(bmdf[,c(1,6:11)],1)
+bmdf$am <- round(bmdf$am,2)
+bmdf$cyl <- round(bmdf$cyl,2)
 bmdf$weight <- round(bmdf$weight,2)
-bmdf$hp <- round(bmdf$hp,2)
+bmdf$hp <- round(bmdf$hp,3)
+bmdf$carb <- round(bmdf$carb,2)
 names(bmdf)[1] <- "(Int)"
 bmdf <- format(bmdf)
+bmdf[which(bmdf == "    NA", arr.ind = TRUE)] <- "      "
 bmdf[which(bmdf == "   NA", arr.ind = TRUE)] <- "     "
 bmdf[which(bmdf == "  NA", arr.ind = TRUE)] <- "    "
 bmdf[which(bmdf == " NA", arr.ind = TRUE)] <- "   "
-bmdf
+
+library(knitr)
+
+
+bmdf_tbl<-kable(bmdf, format = "rst", caption = "Best Models for MPG that Contain Transmission Type" )
+print(bmdf_tbl)
+
 ```
 
 ## Model Inference & Interpretation of Coefficients
@@ -86,9 +99,43 @@ bmdf
 We investigate values of the `am` coefficient for the top models. Note the first 3 all round to 2, suggesting this is a good rough estimate of the adjusted transmission effect. Although our top model is only one AICc point lower than the next best model (model averaging is suggested via the weights, for differences less than 2), we focus attention on it, in the spirit of Assumption **(A)**.
 ```{r coeftable_best, echo = FALSE, comment=""}
 cotbls <- coefTable(bestmodels)
-round(cotbls[["322"]][,1:2], 2)
+round(cotbls[["322"]][,1:2], 3)
 ```
-The table contains no p-values, as after a search of $2^9$ models, these would be inflated: since the procedure only selects 'good' models for consideration, we need to control the "False Discovery Rate", which is the fraction of **all rejected** null hypotheses which are false (i.e., $(False~Positives)/(False~ Positives + True~ Positives)$), not just $\alpha$, which is the fraction of **all truly 0** results that are rejected (i.e., $(False~Positives)/(False~ Positives + True~ Negatives)$). However, std. errors are provided.  These show `hp` (with 4 MPG decrease per 100 HP increase) and `wt` (with 3 MPG decrease per 1000 lb increase) are significant, whereas significance of the the `am` coefficient, `r round(cotbls[['322']][2,1],1)`, is low. The *Estimate* over the *Std. Error*, or t-stat, is only `r round(cotbls[['322']][2,1]/cotbls[['322']][2,2],1)`. Two is near the $\alpha=5\%$ threshold. Given a broader scope for this study, we would investigate some models that do **not** include `am`.  Regardless, the $R^2$ of the top model is `r round(100*summary(bestmodel <- lm(mpg ~ am + hp + wt, mtcars))$r.squared, 0)`%: it explains a high degree of sample variance with only 3 covariates.
+The $R^2$ of this top model is `r round(100*summary(bestmodel <- lm(mpg ~ am + hp + wt, mtcars))$r.squared, 0)`%: it explains a high degree of sample variance with only 3 covariates. The above table contains no p-values, as after a search of $2^9$ models, these would be inflated: since the procedure only selects 'good' models for consideration, we need to control the "False Discovery Rate", which is the fraction of **all rejected** null hypotheses which are false (i.e., $(False~Positives)/(False~ Positives + True~ Positives)$), not just $\alpha$, which is the fraction of **all truly 0** results that are rejected (i.e., $(False~Positives)/(False~ Positives + True~ Negatives)$). However, standard errors are provided.  These show `hp` (with 4 MPG decrease per 100 HP increase) and `wt` (with 3 MPG decrease per 1000 lb increase) are significant, whereas significance of the the `am` coefficient, `r round(cotbls[['322']][2,1],1)`, is low. The *Estimate* over the *Std. Error*, or t-stat, is only `r round(cotbls[['322']][2,1]/cotbls[['322']][2,2],1)`. Two is near the $\alpha=5\%$ threshold. Given this, we investigate models that do **not** include `am`. Here are the top 10 overall:
+```{r unconstrained_model_matrix, comment="", message=FALSE, results='hide'}
+best_unconmodels <- dredge(globalmodel) # considers 'uncon'-strained models
+best_unconmodels[1:10,]
+```
+```{r format_the_unconstrained_model_matrix, comment="", echo = FALSE}
+bm_uncondf <- as.data.frame(best_unconmodels[1:10, ])
+bm_uncondf$gear <- NULL
+bm_uncondf[,c(1:2,4,6,8:13)] <- round(bm_uncondf[,c(1:2,4,6,8:13)],1)
+bm_uncondf$disp <- round(bm_uncondf$disp,3)
+names(bm_uncondf)[1] <- "(Int)"
+names(bm_uncondf)[13] <- "dlta"
+names(bm_uncondf)[14] <- "wgt"
+rmlead0_2d <- function(val) { sub("^(-?)0.", "\\1.", sprintf("%.2f", round(val,2))) }
+rmlead0_3d <- function(val) { sub("^(-?)0.", "\\1.", sprintf("%.3f", round(val,3))) }
+bm_uncondf$carb <- rmlead0_2d(bm_uncondf$carb)
+bm_uncondf$wgt <- rmlead0_2d(bm_uncondf$wgt)
+bm_uncondf$hp <- rmlead0_3d(bm_uncondf$hp)
+bm_uncondf$disp <- rmlead0_3d(bm_uncondf$disp)
+bm_uncondf <- format(bm_uncondf)
+bm_uncondf[which(bm_uncondf == "    NA", arr.ind = TRUE)] <- "      "
+bm_uncondf[which(bm_uncondf == "   NA", arr.ind = TRUE)] <- "     "
+bm_uncondf[which(bm_uncondf == "  NA", arr.ind = TRUE)] <- "    "
+bm_uncondf[which(bm_uncondf == " NA", arr.ind = TRUE)] <- "   "
+bm_uncondf[which(bm_uncondf == "NA", arr.ind = TRUE)] <- "    "
+bm_uncondf_tbl<-kable(bm_uncondf, format = "rst", caption="Best Overall Models for MPG")
+print(bm_uncondf_tbl)
+```
+We see above that models involving `am` do not appear until rank 5 and below. However, 3 of these occur at $delta < 2$, generally considered to be within the margin of error. But, given **(A)**, it is prudent to add the top model overall, involving only `cyl` and `wt`, to the results presented to *Motor Trend*. Compared to the model containing `am`, it has one fewer parameter - therefore less likely to fall victim to overfitting, and only slightly lower $R^2$, equal to `r round(100*summary(bestoverallmodel <- lm(mpg ~ cyl + wt, mtcars))$r.squared, 0)`%.  Also, the ratios of *Std. Errors* to *Estimates* make all coefficients appear significant.  This model implies, though, that none of the variance in MPG is really due to transmission type, but to the combined effect of # of cylinders and weight.  
+  
+  
+```{r coeftable_best_uncon, echo = FALSE, comment=""}
+cotbls_uncon <- coefTable(best_unconmodels)
+round(cotbls_uncon[["261"]][,1:2], 2)
+```
 
 ## Model Diagnostics
 
@@ -96,11 +143,12 @@ We run base R's standard plots in **Figure 4**.  Though the smoother line in *Re
 ```{r non_normal_pt, comment="", results='hide'}
 bestmodel<-lm(mpg~am+hp+wt,mtcars); row.names(mtcars)[which.min(bestmodel$residuals)]
 ```
-*Scale-Location* shows some heteroskedasticity.  Were the scope of this study broader, we would compare with other models.  In *Residuals vs Leverage*, all points are inside 0.5 *Cook's distance*, indicating stable $\beta$s.  Finally, from package `car`, we use `vif()` to calculate the Variance Inflation Factors and evaluate collinearity. All are under 5, causing no alarm (code suppressed to conserve space). VIFs:
+*Scale-Location* shows some heteroskedasticity.  In *Residuals vs Leverage*, all points are inside 0.5 *Cook's distance*, indicating stable $\beta$s.  Finally, from package `car`, we use `vif()` to calculate the Variance Inflation Factors and evaluate collinearity. All are under 5, causing no alarm (code suppressed to conserve space). VIFs:
 ```{r vifs, echo = FALSE, comment=""}
 if (!"car" %in% row.names(installed.packages())) {install.packages("car")}
-library(car); vif(bestmodel)
+library(car); round(vif(bestmodel),2)
 ```
+Given, especially, the heteroskedasticity, we examine the diagnostics for the top model overall, too (**Figure 5**, `mpg ~ cyl + wt`).  It does not appear markedly better anywhere, and it appears slightly worse on the **Normal Q-Q** evaluation.
 
 
 # Figures
@@ -126,17 +174,20 @@ print(g_integer_vars)
 
 ```{r variable_definition, echo = FALSE}
 mtcars$vs <- factor(x=as.character(mtcars$vs),levels=c("0","1"),labels=c("v","s"))
-mtcars$am <- factor(x=as.character(mtcars$am),levels=c("0","1"),labels=c("auto","manual"))
+mtcars$am <- factor(x=as.character(mtcars$am),levels=c("0","1"),labels=c("A","M"))
 mtcars$gear <- as.factor(mtcars$gear)
+mtcars$qsec <- NULL
 ```
 
 The pairs plot  shows many strong correlations.
 ```{r pairs_plot, cache = TRUE, message = FALSE, fig.cap="Pairs Plot of Motor Trend Cars Database"}
 if (!"GGally" %in% rownames(installed.packages())) {install.packages("GGally")}
 library(GGally)
-g_pairs <- ggpairs(mtcars, lower = list(continuous = wrap(ggally_smooth, color = "blue")),
-           diag = list(continuous = "barDiag"), upper = list(continuous = wrap(ggally_cor,
-           size = 3, color = "blue")), axisLabels = 'none')
+g_pairs <- ggpairs(mtcars, mapping=aes(color=am, alpha = 0.7),lower = list(continuous = 
+                                                        wrap(ggally_smooth, size = 1)),
+           diag = list(continuous = "barDiag"), upper = list(continuous = 
+           wrap(ggally_cor,size=2)), axisLabels = 'none')
+           
 print(g_pairs)
 ```
 
@@ -149,9 +200,17 @@ g_violin <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
         labs(title = "Average MPG for manual transmissions is significantly higher")
 print(g_violin)
 ```
-
-```{r diagnostics, echo = FALSE, fig.cap = "Standard Model Diagnostic Plots", message=FALSE}
+  
+  
+```{r diagnostics, echo = FALSE, fig.cap = "Standard Model Diagnostic Plots", fig.height=6, message=FALSE}
 par(mfrow = c(2,2))
 plot(bestmodel)
 ```
-Figure 4: Base R's standard diagnostic plots guide our eye to potential problems.
+Figure 4: Base R's standard diagnostic plots guide our eye to potential problems.  
+  
+```{r diagnostics_best_overall_model, echo = FALSE, fig.cap = "Standard Model Diagnostic Plots: Best Overall Model", fig.height=6, message=FALSE}
+par(mfrow = c(2,2))
+plot(bestoverallmodel)
+```
+Figure 5: Standard diagnostics plots for unconstrained best model.  
+  
