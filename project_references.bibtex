@@ -1,0 +1,145 @@
+@article{HurvichAICcDerived1989,
+author = {HURVICH, CLIFFORD M. and TSAI, CHIH-LING},
+title = {Regression and time series model selection in small samples},
+journal = {Biometrika},
+volume = {76},
+number = {2},
+pages = {297},
+year = {1989},
+doi = {10.1093/biomet/76.2.297},
+URL = {http://dx.doi.org/10.1093/biomet/76.2.297},
+eprint = {/oup/backfile/Content_public/Journal/biomet/76/2/10.1093/biomet/76.2.297/2/76-2-297.pdf},
+
+note = {Conventional AIC is only valid in the limit of large N. For small N or P ~ O(N), a bias correction is required to further penalize models with larger numbers of parameters.},
+
+abstract = {A bias correction to the Akaike information criterion, AIC, is derived for regression and autoregressive time series models. The correction is of particular use when the sample size is small, or when the number of fitted parameters is a moderate to large fraction of the sample size. The corrected method, called AICc, is asymptotically efficient if the true model is infinite dimensional. Furthermore, when the true model is of finite dimension, AICc is found to provide better model order choices than any other asymptotically efficient method. Applications to nonstationary autoregressive and mixed autoregressive moving average time series models are also discussed.}
+}
+
+@article{DaviesKLCV2005,
+title = {Cross validation model selection criteria for linear regression based on the Kullback–Leibler discrepancy},
+journal = {Statistical Methodology},
+volume = {2},
+number = {4},
+pages = {249 - 266},
+year = {2005},
+issn = {1572-3127},
+doi = {http://dx.doi.org/10.1016/j.stamet.2005.05.002},
+url = {http://www.sciencedirect.com/science/article/pii/S1572312705000237},
+author = {Simon L. Davies and Andrew A. Neath and Joseph E. Cavanaugh},
+keywords = {Akaike information criterion},
+keywords = {AIC},
+keywords = {AICc},
+keywords = {Kullback–Leibler information},
+
+note = {The authors derive PDCa, a version of AICc tailored to linear regression.  They then propose an LOOCV criterion, "PDC", for which E[PDC] = PDCa. In simulations they perform, AICc and PDCa both do substantially better than LOOCV PDCa at selecting the correct number of parameters.},
+
+abstract = {For many situations, the predictive ability of a candidate model is its most important attribute. In light of our interest in this property, we introduce a new cross validation model selection criterion, the predictive divergence criterion (PDC), together with a description of the target discrepancy upon which it is based. In the linear regression framework, we then develop an adjusted cross validation model selection criterion (PDCa) which serves as the minimum variance unbiased estimator of this target discrepancy. Furthermore, we show that this adjusted criterion is asymptotically a minimum variance unbiased estimator of the Kullback–Leibler discrepancy which serves as the basis for the Akaike information criteria (AIC) and AICc.}
+}
+
+@article{CawleySelBiasCV2010,
+ author = {Cawley, Gavin C. and Talbot, Nicola L.C.},
+ title = {On Over-fitting in Model Selection and Subsequent Selection Bias in Performance Evaluation},
+ journal = {J. Mach. Learn. Res.},
+ issue_date = {3/1/2010},
+ volume = {11},
+ year = {2010},
+ issn = {1532-4435},
+ pages = {2079--2107},
+ numpages = {29},
+ url = {http://dl.acm.org/citation.cfm?id=1756006.1859921},
+ acmid = {1859921},
+ publisher = {JMLR.org},
+ 
+ note = {Shows in the context of classification that hyperparameter tuning during validation, using either cross-validation or a single validation set, can result in overfitting of the model selection criterion.},
+ 
+ abstract={Model selection strategies for machine learning algorithms typically involve the numerical optimisation of an appropriate model selection criterion, often based on an estimator of generalisation performance, such as k-fold cross-validation. The error of such an estimator can be broken down into bias and variance components. While unbiasedness is often cited as a beneficial quality of a model selection criterion, we demonstrate that a low variance is at least as important, as a nonnegligible variance introduces the potential for over-fitting in model selection as well as in training the model. While this observation is in hindsight perhaps rather obvious, the degradation in performance due to over-fitting the model selection criterion can be surprisingly large, an observation that appears to have received little attention in the machine learning literature to date. In this paper, we
+show that the effects of this form of over-fitting are often of comparable magnitude to differences in performance between learning algorithms, and thus cannot be ignored in empirical evaluation. Furthermore, we show that some common performance evaluation practices are susceptible to a form of selection bias as a result of this form of over-fitting and hence are unreliable. We discuss methods to avoid over-fitting in model selection and subsequent selection bias in performance evaluation, which we hope will be incorporated into best practice. While this study concentrates on cross-validation based model selection, the findings are quite general and apply to any model selection practice involving the optimisation of a model selection criterion evaluated over a finite sample of data, including maximisation of the Bayesian evidence and optimisation of performance bounds.}
+} 
+
+@inproceedings{NgPreventingOverfitCV1997,
+ author = {Ng, Andrew Y.},
+ title = {Preventing "Overfitting" of Cross-Validation Data},
+ booktitle = {Proceedings of the Fourteenth International Conference on Machine Learning},
+ series = {ICML '97},
+ year = {1997},
+ isbn = {1-55860-486-3},
+ pages = {245--253},
+ numpages = {9},
+ url = {http://dl.acm.org/citation.cfm?id=645526.657119},
+ acmid = {657119},
+ publisher = {Morgan Kaufmann Publishers Inc.},
+ address = {San Francisco, CA, USA},
+ 
+ note = {Overfitting of selection criterion in classification problems. Looks at LOOCV.  Can result in wrong ordering of selected models.  Issue is error of selection criterion on training data can be poor for low generalization error (due to noise), and variance of selection criterion can be increasing function of error of selection criterion on training data, resulting in the "best" model having higher CV error on training data than other models with worse generalization error.  It is noted that this phenomenon is not a function of trying models of high 'complexity', but of trying 'too many' models (which need not be complex).  It is suggested that a general strategy is not to try 'too many' models.},
+ 
+ abstract = {Suppose that, for a learning task, we have to select one hypothesis out of a set of hypotheses (that may, for example, have been generated by multiple applications of a randomized learning algorithm). A common approach is to evaluate each hypothesis in the set on some previously unseen cross-validation data, and then to select the hypothesis that had the lowest cross-validation error. But when the cross-validation data is partially corrupted such as by noise, and if the set of hypotheses we are selecting from is large, then "folklore" also warns about "overfitting" the crossvalidation data [Klockars and Sax,1986, Tukey, 1949, Tukey, 1953]. In this paper, we explain how this "overfitting" really occurs, and show the surprising result that it can be overcome by selecting a hypothesis with a higher cross-validation error, over others with lower cross-validation errors. We give reasons for not selecting the hypothesis with the lowest cross-validation error, and propose a new algorithm, LOOCVCV, that uses a computationally efficient form of leave-one-out crossvalidation to select such a hypothesis. Finally, we present experimental results for one domain, that show LOOCVCV consistently beating picking the hypothesis with the lowest cross-validation error, even when using reasonably large cross-validation sets.}
+}
+
+@article{KearnsTheoretical1997,
+author={Kearns, Michael
+and Mansour, Yishay
+and Ng, Andrew Y.
+and Ron, Dana},
+title={An Experimental and Theoretical Comparison of Model Selection Methods},
+journal={Machine Learning},
+year={1997},
+volume={27},
+number={1},
+pages={7--50},
+abstract={We investigate the problem of model selection in the setting of supervised learning of boolean functions from independent random examples. More precisely, we compare methods for finding a balance between the complexity of the hypothesis chosen and its observed error on a random training sample of limited size, when the goal is that of minimizing the resulting generalization error. We undertake a detailed comparison of three well-known model selection methods --- a variation of Vapnik's Guaranteed Risk Minimization (GRM), an instance of Rissanen's Minimum Description Length Principle (MDL), and (hold-out) cross validation (CV). We introduce a general class of model selection methods (called penalty-based methods) that includes both GRM and MDL, and provide general methods for analyzing such rules. We provide both controlled experimental evidence and formal theorems to support the following conclusions: (1) Even on simple model selection problems, the behavior of the methods examined can be both complex and incomparable. Furthermore, no amount of “tuning” of the rules investigated (such as introducing constant multipliers on the complexity penalty terms, or a distribution-specific “effective dimension”) can eliminate this incomparability. (2) It is possible to give rather general bounds on the generalization error, as a function of sample size, for penalty-based methods. The quality of such bounds depends in a precise way on the extent to which the method considered automatically limits the complexity of the hypothesis selected. (3) For any model selection problem, the additional error of cross validation compared to any other method can be bounded above by the sum of two terms. The first term is large only if the learning curve of the underlying function classes experiences a "phase transition” between (1-γ)m and m examples (where gamma is the fraction saved for testing in CV). The second and competing term can be made arbitrarily small by increasing γ. (4) The class of penalty-based methods is fundamentally handicapped in the sense that there exist two types of model selection problems for which every penalty-based method must incur large generalization error on at least one, while CV enjoys small generalization error on both.},
+issn={1573-0565},
+doi={10.1023/A:1007344726582},
+url={http://dx.doi.org/10.1023/A:1007344726582}
+}
+
+
+
+@inbook{RaoDangersCV2008,
+author = {R. Bharat Rao and Glenn Fung and Romer Rosales},
+title = {On the Dangers of Cross-Validation: An Experimental Evaluation},
+booktitle = {Proceedings of the 2008 SIAM International Conference on Data Mining},
+chapter = {},
+pages = {588-596},
+year = {2008},
+
+note = {Trying very many selections of a short list of model tuning parameters can result in substantial overfitting. This is overfitting of the selection criterion by trying many models, even without introducing complexity of the models, per se.},
+
+abstract = {Cross validation allows models to be tested using the full training set by means of repeated resampling; thus, maximizing the total number of points used for testing and potentially, helping to protect against overfitting. Improvements in computational power, recent reductions in the (computational) cost of classification algorithms, and the development of closed-form solutions (for performing cross validation in certain classes of learning algorithms) makes it possible to test thousand or millions of variants of learning models on the data. Thus, it is now possible to calculate cross validation performance on a much larger number of tuned models than would have been possible otherwise. However, we empirically show how under such large number of models the risk for overfitting increases and the performance estimated by cross validation is no longer an effective estimate of generalization; hence, this paper provides an empirical reminder of the dangers of cross validation. We use a closed-form solution that makes this evaluation possible for the cross validation problem of interest. In addition, through extensive experiments we expose and discuss the effects of the overuse/misuse of cross validation in various aspects, including model selection, feature selection, and data dimensionality. This is illustrated on synthetic, benchmark, and real-world data sets.},
+
+doi = {10.1137/1.9781611972788.54},
+URL = {http://epubs.siam.org/doi/abs/10.1137/1.9781611972788.54},
+eprint = {http://epubs.siam.org/doi/pdf/10.1137/1.9781611972788.54}
+}
+
+@article{BreimanSubmodelSelection1992,
+ ISSN = {03067734, 17515823},
+ URL = {http://www.jstor.org/stable/1403680},
+ abstract = {Often, in a regression situation with many variables, a sequence of submodels is generated containing fewer variables by using such methods as stepwise addition or deletion of variables, or 'best subsets'. The question is which of this sequence of submodels is 'best', and how can submodel performance be evaluated. This was explored in Breiman (1988) for a fixed X-design. This is a sequel exploring the case of random X-designs. Analytical results are difficult, if not impossible. This study involved an extensive simulation. The basis of the study is the theoretical definition of prediction error (PE) as the expected squared error produced by applying a prediction equation to the distributional universe of (y, x) values. This definition is used throughout to compare various submodels. There can be startling differences between the x-fixed and x-random situations and different PE estimates are appropriate. Non-resampling estimates such as CP, adjusted R2, etc. turn out to be highly biased methods for submodel selection. The two best methods are cross-validation and bootstrap. One surprise is that 5 fold cross-validation (leave out 20% of the data) is better at submodel selection and evaluation than leave-one-out cross-validation. There are a number of other surprises.},
+ author = {Leo Breiman and Philip Spector},
+ journal = {International Statistical Review / Revue Internationale de Statistique},
+ number = {3},
+ pages = {291-319},
+ publisher = {[Wiley, International Statistical Institute (ISI)]},
+ title = {Submodel Selection and Evaluation in Regression: The X-Random Case},
+ volume = {60},
+ year = {1992}
+}
+
+
+
+@article{baumer2014r,
+  title={R Markdown: Integrating a reproducible analysis tool into introductory statistics},
+  author={Baumer, Ben and Cetinkaya-Rundel, Mine and Bray, Andrew and Loi, Linda and Horton, Nicholas J},
+  journal={arXiv preprint arXiv:1402.1894},
+  year={2014}
+}
+@article{racine2012rstudio,
+  title={RStudio: A Platform-Independent IDE for R and Sweave},
+  author={Racine, Jeffrey S},
+  journal={Journal of Applied Econometrics},
+  volume={27},
+  number={1},
+  pages={167--172},
+  year={2012},
+  publisher={Wiley Online Library}
+}

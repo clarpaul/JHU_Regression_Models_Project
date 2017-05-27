@@ -1,74 +1,131 @@
 ---
-title: "Regression Models Course Project"
-author: "Paul Clark: March 5, 2017"
+title: 'Linear Regression: MPG in the Motor Trend Cars Dataset'
+author: "Paul Clark"
+date: "March 5, 2017"
 output:
   pdf_document:
     fig_caption: yes
     includes:
       in_header: preamble-latex.tex
+    keep_tex: yes
     number_sections: yes
   html_notebook:
     fig_caption: yes
     number_sections: yes
+bibliography: project_references.bibtex
 ---
 
 # Executive Summary
 
-For its 1974 edition, US magazine *Motor Trend* has asked two questions to be addressed using data on fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973-74 models). **Question 1:** *“Is an automatic or manual transmission better for MPG?”* **Question 2:** *"How does MPG differ, quantitatively, between automatic and manual transmissions?"* The variables are described below:
+For its 1974 edition, US magazine *Motor Trend* has asked two questions to be addressed using data on fuel consumption and 10 aspects of automobile design and performance for 32 '73-'74 model autos.  
+**Questions**:  
+
+  1. “Is an automatic or manual transmission better for MPG?”
+  2. "Quantify the MPG-difference between automatic and manual transmissions."  
+
+**Variables:**
 ```{r intro, echo = FALSE, comment=""}
   c( "mpg  Miles/(US) gallon", "cyl  Num cylinders", "disp Displacement (cu.in.)", 
      "hp   Gross horsepower", "drat Rear axle ratio",
      "wt   Weight (1000 lbs)", "qsec 1/4 mile time", 
-     "vs   Engine(0=V,1=Inline)","am   Transmission(0=auto,1=man)",
+     "vs   Engine(0=V,1=In-line)","am   Transmission(0=auto,1=man)",
      "gear Num forward gears", "carb Num carburetors")  
 ```
-We address the questions via two approaches: **Approach (a)** *- Calculation of mean differenc and two-sample T-test on `mpg` of the transmission types.* **Approach (b)** *- Adjustment of the `am` effect in (a) by regressing `mpg` on all other variables in the data.* Note: for either approach to be meaningful, this small sample of 32 cars must be representative of their populations. We assume this is the case.
+We apply two **Approaches** to answering the questions:
 
-We conclude from **Approach (a)** that the two groups of cars come from populations with statistically different means. If the data provided is representative, then *manual* transmission cars generally have an estimated mean gas mileage **7.2 MPG** higher than *automatic* cars.  
+  (A) **T-test:** Analysis of the difference in means of `mpg` for the two transmission types
+  (B) **Regression:**  Investigation of the impact of other variables in adjusting or replacing the transmission effect.
+ 
+We have 5 **Conclusions** based on these analyses:
 
-From **Approach (b)**, we have two main conclusions: **(1)** the adjustments of the `am` effect that most help predict `mpg` are `hp` and `wt`, both negative, corresponding to model $\textbf{E[mpg] = M}\cdot am + \textbf{H}\cdot hp + \textbf{W}\cdot wt$; **(2)** the *automatic/manual* effect $M$, with *horsepower* and *weight* held fixed, is approximately **2.1 MPG**, with manual again having higher `mpg` than automatic.  Other engineered effects are the sources of more of the difference in `mpg` (**5 MPG** worth) than transmission type alone. Increased engine `hp` accounts for a decrease of 3.7 MPG per hundred HP, and increased weight accounts for a decrease of 2.9 MPG per thousand lbs.
-
-Finally, due to low significance of the `am` coefficient (**Std. Error** of 1.4), we also investigated other models not constrained to include `am`. The best of these was $\textbf{E[mpg] = C}\cdot cyl + \textbf{W}\cdot wt$, with effect sizes of $C$ = 1.5 MPG decrease per cylinder, and $W$ = 3.2 MPG decrease per thousand lbs of weight.  Note the rough consistency of the `wt` effect across the two models: it is again around 3 MPG.
+  1.  The two groups come from populations with statistically different means.
+  2.  If the data is representative, mean MPG of *manual* transmission cars is approximately **7.2 MPG** higher than *automatic*, with a one-sided confidence interval of 3.9 MPG to infinity.
+  3.  The adjustments of the transmission-type effect that are most helpful in prediction of `mpg` are `hp` and `wt`, both negative, and `vs`, which adds a positive adjustment for in-line engines as compared to V-type.
+  4.  The *transmission* effect, with *horsepower*, *weight*, and **engine-type** held fixed, is approximately **2.4 MPG**, with manual again having higher `mpg` than automatic.  These other engineered effects are the sources of more of the difference in `mpg` (**4.8 MPG** worth) than transmission type alone.
+  5.  Due to low significance of the `am` coefficient (**Std. Error** of X), we also investigate other models not constrained to include `am`. The best of these, selected via cross-validation, was $E[mpg] = 39.6 -0.49\cdot carb -1.29\cdot cyl -3.16\cdot wt$.  
 
 # Exploratory Data Analysis
+Note that for our analyses to be meaningful, this sample of 32 cars must be representative of a larger, defined population of vehicles.  
+```{r car_models, echo = FALSE, comment = ""}
+row.names(mtcars)
+```
+Note that the sample contains multiple Mercedes (7) and Mazdas (2).  It may enhance prediction to consider  a "Mercedes" and/or "Mazda" effect in our modeling.  However, in **Assumption (b)** below, we restrict consideration to differences in fundamental engineering variables, implicitly assuming that such differences explain any brand specific effects.  
+
 In **Figure 1**, we examine integer predictors to decide whether to treat them as factors. We find value in treating `cyl` and `carb` as continuous: they show clear trends vs. other variables. And from a pairs plot, **Figure 2**, we see many strong correlations, so model selection should consider variance inflation.
 
-# Approach (a): Two sample t-test and Inference
+# Approach (A): T-test
 ```{r marginal_mpg_diff, cache = TRUE, message=FALSE, echo=FALSE}
 mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manual']) - mean(mpg[am == 'auto']))
 ```
 **Figure 3** shows that in this data, `mpg` varies with `am`.  Mean mileage for manual is **`r round(mpg_delta_grp,1)` mpg** higher than automatic. We compute p-value and confidence interval for the test of manual transmission *greater*.  
 ```{r t_test, comment=""}
-t_test<-t.test(mpg~am,data=mtcars,alternative='less') # less: 2nd factor is t.test base
+t_test <- t.test(mpg~am,data=mtcars,alternative='less') #'less': level 2 is t.test base
 # note: code for processing and formatting of output suppressed
 ```
 
 ```{r t_output, echo = FALSE, comment=""}
 cat(sep = "",  "p-value = ", 
-    round(100*(t_test$p.value),2), "%", "     95% ", "conf.int = ", 
+    round(100*(t_test$p.value),2), "%", "     95% ", "confidence interval = ", 
     round(-t_test$conf.int[2],2), " to ", -t_test$conf.int[1],"\n")
 ```
-**Inference:** Given the p-value, we are highly confident manual is associated with higher fuel economy, in the populations from which these samples were drawn.
+**Inference** 
+Given the p-value, and assuming rough normality, we are highly confident manual transmissions are associated with higher fuel economy in the populations from which these samples were drawn.  Based on our sample values, the probability is only 1 in 20 that the interval above 3.9 MPG does not contain our true difference in means.
 
-# Approach (b): OLS regression
+# Approach (B): Regression
 
-Approach **(b)** is under-specified. Having identified `mpg` and `am` as of interest, the "correct" choice of model still depends on selection of the appropriate subset of 9 other variables. This should be a function of variable/model significance, but also *Motor Trend's* interests.  For significance testing, manual checking of p-values is in-viable: at least $2^{9} = 512$ models with single predictors exist. Therefore, to fully specify and make the approach manageable, we must make additional assumptions.
+Approach **(B)** is under-specified. Having identified `mpg` and `am` as of interest, the "correct" choice of model still depends on selection of the appropriate subset of 9 other variables. This should be a function of variable/model significance, but also *Motor Trend's* interests.  For significance testing, manual checking of p-values is in-viable: at least $2^{9} = 512$ models with single predictors exist. Therefore, to fully specify and make the approach manageable, we must make additional assumptions.
 
-We assume *Motor Trend* values: **(A)** Parsimony/simplicity; **(B)** Models with granular, causal variables that may clarify engineering trade-offs; **(C)** Predictiveness: good generalizability outside the training sample.
+**Assumptions**  
+In answering questions 1 ad 2, we assume *Motor Trend* values the following, in rough priority order:  
+  
+  (a)  Model parsimony/simplicity
+  (b)  Models with granular, causal variables that may clarify engineering trade-offs
+  (c)  Predictiveness: good generalizability outside the training sample
 
 ## Model Search
 
-Due to **(A)**, we consider no interactions.  From **(B)**, we exclude `qsec`, a summary metric.  Due to **(C)**, we rank models using the **AIC** metric, which estimates model predictiveness outside the training sample.  For OLS regression, the metric is $n\cdot Log(\frac{\sum_{i=1}^n(y_{i}- \hat{y}_{i})^2}{n}) + 2k$, where $k =$ # of parameters including estimate of residual error, an overfitting penalty.  In fact, we use **AICc**, which corrects the penalty to be greater for small $n$ by adding a term $\frac{2k(k + 1)}{{n}-{k}-1}$ (note that this term varies based on model structure; this version only holds for Gaussian models). We use automated search to make evaluation of all $2^9$ models feasible. Models are ranked from smallest to largest AICc.  Only non-zero coefficients are shown, and only models with the variable of interest (`am`) are evaluated.
+### Discussion
+
+#### How many folds to use in cross validation?  
+Comparison of cross-validation techniques for submodel dimension selection in continuous-outcome regression show that 5 and 10 fold cross-validation selects more accurate models than Leave-One-Out CV, even with relatively small sample sizes compared to number of candidate predictors [e.g., 60 cases with 40 candidate predictors, @BreimanSubmodelSelection1992]. 
+
+#### Overfitting of the selection criterion by cross-validating many feature sets  
+Also, it has been shown in the classification context (Linear Discriminant Analysis) that, especially in small sample sizes (e.g., $N/(number features) = 100$), using cross-validation to evaluate very many 'draws' of a small number of features from an expanding candidate set of potential features results in increasing overfitting [@RaoDangersCV2008]. Note that, echoing [@NgPreventingOverfitCV1997], this result constitutes overfitting of the selection criterion by testing "very many" feature sets, not "overly complex" feature sets.
+
+#### Overfitting of the selection criterion by cross-validating many hyper-parameters  
+It has also been shown in the context of classification that hyperparameter tuning during validation, using either cross-validation or a single validation set, can result in overfitting of the model selection criterion due to variance of the error estimate [@CawleySelBiasCV2010].  To combat this, it is suggested it be considered to evaluate hyper-parameters on a 'per fold' basis, as part of model inference/fitting, as opposed to cross-validation.  However, it is not clear, then, whether to select the final hyperparameter values based on some sort of average across folds, or to select it based on the full data-set, which would leaves us open to overfitting.
+
+#### Other approaches to model selection besides cross-validation
+For continuous-valued regression, information theoretic results based on theoretical expectations over distributions (AICc and variants) may be better than LOOCV results [@DaviesKLCV2005].  Evaluation vs. 5- to 10-fold validation does not appear to have been undertaken in the literature.
+
+#### Lower (simple) validation error does not imply lower generalization error  
+For classification using a validation set, it is shown that when very many models are evaulated, wrong model choice can occur (the models are mis-ordered by the selection criterion), especially when the data is noisy/error-prone [@NgPreventingOverfitCV1997].
+
+#### Overfitting of the selection criterion by 
+
+### Model search discussion
+  
+  1.  Trade-off: Choose exact predictors during the inference process using R-squared for fixed number of predictors (do not detect over-fitting in predictor choice, only in number of predictors), or choose exact predictors during cross-validation (detect over-fitting in predictor choice, but potentially overfit the selection criterion)
+  2.  LOOCV vs. K-fold CV vs. some point in between: a quagmire. Consensus is that positive bias on CV error is higher for K-fold, but no true consensus on the way variance changes on the spectrum of LOOCV to K-fold with small K.
+  3.  Potential for over-fitting the selection criteria, especially for small sample size, leads to negative bias, but usage of low K for K-fold CV can have positive bias.
+  4.  Use information theoretic result, or use cross-validation.  Information theoretic result may be sufficient when precise variables chosen as part of inference on each fold, and there are indications that info theoretic results may be better than CV in such circumstances. 
+
+Due to **(a)**, we consider no interactions.  From **(b)**, we exclude `qsec`, a summary metric.  Due to **(c)**, we rank models using the **AIC** metric, which estimates model predictiveness outside the training sample.  For OLS regression, the metric is $n\cdot Log(\frac{\sum_{i=1}^n(y_{i}- \hat{y}_{i})^2}{n}) + 2k$, where $k =$ # of parameters including estimate of residual error, an overfitting penalty.  In fact, we use **AICc**, which corrects the penalty to be greater for small $n$ by adding a term $\frac{2k(k + 1)}{{n}-{k}-1}$ (note that this term varies based on model structure; this version only holds for Gaussian models). We use automated search to make evaluation of all $2^9$ models feasible. Models are ranked from smallest to largest AICc.  Only non-zero coefficients are shown, and only models with the variable of interest (`am`) are evaluated.
 
 ```{r model_search, warning = FALSE, message=FALSE, comment="", results='hide'}
 if (!"MuMIn" %in% row.names(installed.packages())) {install.packages("MuMIn")}
-library(MuMIn); mtcars$qsec <- NULL; mtcars$gear <- as.factor(mtcars$gear)
+library(MuMIn)
+# preprocessing variables: remove unwanted perf. measure `qsec`; treat `gear` as factor
+mtcars$qsec <- NULL; mtcars$gear <- as.factor(mtcars$gear)
 globalmodel <- lm(mpg ~ ., data = mtcars, na.action = na.fail)
-bestmodels <- dredge(globalmodel, subset = ~ am) # only considers models with `am`
-bestmodels[1:5,]
+
+n_models <- 2^(length(model.frame(globalmodel)) - 1)
+
+best_am_models <- dredge(globalmodel, subset = ~ am) # considers only models with `am`
+best_am_models[1:10,]
 ```
-```{r format_the_model_matrix, echo = FALSE, comment=""}
-bmdf <- as.data.frame(bestmodels[1:5, ])
+```{r format_the_model_matrix, echo = FALSE, comment="", results = 'asis'}
+bmdf <- as.data.frame(best_am_models[1:5, ])
 bmdf$disp <- NULL
 bmdf$drat <- NULL
 bmdf$gear <- NULL
@@ -88,87 +145,233 @@ bmdf[which(bmdf == " NA", arr.ind = TRUE)] <- "   "
 
 library(knitr)
 
-
-bmdf_tbl<-kable(bmdf, format = "rst", caption = "Best Models for MPG that Contain Transmission Type" )
-print(bmdf_tbl)
+kable(bmdf, caption = "Best Models for MPG that Contain Transmission Type")
 
 ```
+
 
 ## Model Inference & Interpretation of Coefficients
 
 We investigate values of the `am` coefficient for the top models. Note the first 3 all round to 2, suggesting this is a good rough estimate of the adjusted transmission effect. Although our top model is only one AICc point lower than the next best model (model averaging is suggested via the weights, for differences less than 2), we focus attention on it, in the spirit of Assumption **(A)**.
-```{r coeftable_best, echo = FALSE, comment=""}
-cotbls <- coefTable(bestmodels)
-round(cotbls[["322"]][,1:2], 3)
+```{r coeftable_best, echo = FALSE, comment="", results = 'asis'}
+cotbls <- coefTable(best_am_models)
+kable(round(cotbls[["450"]][,1:2], 3), 
+      caption = "Coefficients of Best Model Including Transmission Type")
 ```
-The $R^2$ of this top model is `r round(100*summary(bestmodel <- lm(mpg ~ am + hp + wt, mtcars))$r.squared, 0)`%: it explains a high degree of sample variance with only 3 covariates. The above table contains no p-values, as after a search of $2^9$ models, these would be inflated: since the procedure only selects 'good' models for consideration, we need to control the "False Discovery Rate", which is the fraction of **all rejected** null hypotheses which are false (i.e., $(False~Positives)/(False~ Positives + True~ Positives)$), not just $\alpha$, which is the fraction of **all truly 0** results that are rejected (i.e., $(False~Positives)/(False~ Positives + True~ Negatives)$). However, standard errors are provided.  These show `hp` (with 4 MPG decrease per 100 HP increase) and `wt` (with 3 MPG decrease per 1000 lb increase) are significant, whereas significance of the the `am` coefficient, `r round(cotbls[['322']][2,1],1)`, is low. The *Estimate* over the *Std. Error*, or t-stat, is only `r round(cotbls[['322']][2,1]/cotbls[['322']][2,2],1)`. Two is near the $\alpha=5\%$ threshold. Given this, we investigate models that do **not** include `am`. Here are the top 10 overall:
-```{r unconstrained_model_matrix, comment="", message=FALSE, results='hide'}
-best_unconmodels <- dredge(globalmodel) # considers 'uncon'-strained models
-best_unconmodels[1:10,]
+  
+The $R^2$ of this top model is `r round(100*summary(best_am_model <- lm(mpg ~ am + hp + vs + wt, mtcars))$r.squared, 0)`%: it explains a high degree of sample variance with only 3 covariates. The above table contains no p-values, as after a search of $2^9$ models, these would be inflated: since the procedure only selects 'good' models for consideration, we need to control the "False Discovery Rate", which is the fraction of **all rejected** null hypotheses which are false (i.e., $(False~Positives)/(False~ Positives + True~ Positives)$), not just $\alpha$, which is the fraction of **all truly 0** results that are rejected (i.e., $(False~Positives)/(False~ Positives + True~ Negatives)$). However, standard errors are provided.  Increased engine **HP** accounts for a decrease of 3.0 MPG per hundred HP, increased **weight** accounts for a decrease of 2.6 MPG per thousand lbs, and **engine-type** accounts for a difference of 1.8 MPG, with inline engines having higher MPG than V-type engines. Note that significance of the the `am` coefficient, `r round(cotbls[['450']][2,1],1)`, is low. The *Estimate* over the *Std. Error*, or t-stat, is only `r round(cotbls[['450']][2,1]/cotbls[['450']][2,2],1)`. Two is near the $\alpha=5\%$ threshold. Given this, we investigate models that do **not** include `am`. Here are the top 10 overall:
+```{r lkocv_functions}
+# given a model, calculates mean-squared test error for leave-k-out cross validation
+lkocv <- function(lm_model, folds, mpg){
+        n_folds <- length(folds)
+        modframe <- model.frame(lm_model)
+        n <- names(modframe)
+        sse <- numeric(n_folds)
+        if (length(n) > 1){
+                f <- as.formula(paste("mpg ~", paste(n[!n %in% "mpg"], 
+                                      collapse = " + ")))
+                for (i in 1:n_folds) {
+                        # iterate over all the folds, i; for each i...
+                        # create model based on dataset leaving out fold i
+                        trnd_model <- lm(formula = f, data = 
+                                        modframe[ -folds[[i]], ])
+                        # calculate and store sum of squared errors for each fold i
+                        sse[i] <- sum((modframe[folds[[i]], "mpg"] -
+                                        predict(trnd_model, newdata = 
+                                                modframe[folds[[i]],]))^2)
+                }
+                } else { 
+                f <- as.formula("mpg ~ 1")
+                for (i in 1:n_folds) {
+                        # iterate over all the folds, i; for each i...
+                        # create model based on dataset leaving out fold i
+                        trnd_model <- lm(formula = f, data = 
+                                        data.frame(mpg = mpg[ -folds[[i]] ]))
+                        # calculate and store sum of squared errors for each fold i
+                        sse[i] <- sum((mpg[ folds[[i]] ] -
+                                        predict(trnd_model, newdata = 
+                                                data.frame(mpg = mpg[ folds[[i]] ])))^2)
+                }
+        }
+        # sum up the squared errors across all folds, divide by n, get MSE
+        mse_nobs <- sum(sse)/nrow(modframe)
+        mse_nobs
+}
+
+
+# function does n_iter iterations of cross-validation per fold, averages the results,
+# returning out-of-sample r-squared
+lkocv_iter <- function(lm_model, k.= k, n_iter.=n_iter, rseed. = rseed,
+                       n_models. = n_models)
+{
+        set.seed(rseed.)
+        modframe <- model.frame(lm_model)
+        mpg <- modframe$mpg
+        dev_mean <- mpg - mean(mpg)
+        mse_iter <- numeric(n_iter.)
+        n_sample <- nobs(lm_model)
+        if (k. > 1) {
+                for (i in 1:n_iter.) {
+                        folds <- split(sample(n_sample), gl(ceiling(n_sample/k.),
+                                                            k., n_sample))
+                        # returns mean-squared-error of all observations in iteration i
+                        mse_iter[i] <- lkocv(lm_model = lm_model, folds = folds, mpg)
+                }
+        
+        } else {
+                # leave-one-out cross-validation (loocv)
+                h <- lm.influence(lm_model)$hat
+                mse_iter <- (residuals(lm_model)/(1 - h))^2
+        }
+        if (.GlobalEnv$n %% 10 == 0) cat(sep = "", "\n")
+        assign("n", .GlobalEnv$n + 1, .GlobalEnv)
+        if (.GlobalEnv$n <= n_models.) {
+                cat(sep = "", "[", .GlobalEnv$n,"/", n_models.,"]")
+        }
+        # 1 - out-of-sample R-squared
+        mean(mse_iter)/mean(dev_mean^2)
+}
 ```
-```{r format_the_unconstrained_model_matrix, comment="", echo = FALSE}
-bm_uncondf <- as.data.frame(best_unconmodels[1:10, ])
-bm_uncondf$gear <- NULL
-bm_uncondf[,c(1:2,4,6,8:13)] <- round(bm_uncondf[,c(1:2,4,6,8:13)],1)
-bm_uncondf$disp <- round(bm_uncondf$disp,3)
-names(bm_uncondf)[1] <- "(Int)"
-names(bm_uncondf)[13] <- "dlta"
-names(bm_uncondf)[14] <- "wgt"
-rmlead0_2d <- function(val) { sub("^(-?)0.", "\\1.", sprintf("%.2f", round(val,2))) }
-rmlead0_3d <- function(val) { sub("^(-?)0.", "\\1.", sprintf("%.3f", round(val,3))) }
-bm_uncondf$carb <- rmlead0_2d(bm_uncondf$carb)
-bm_uncondf$wgt <- rmlead0_2d(bm_uncondf$wgt)
-bm_uncondf$hp <- rmlead0_3d(bm_uncondf$hp)
-bm_uncondf$disp <- rmlead0_3d(bm_uncondf$disp)
-bm_uncondf <- format(bm_uncondf)
-bm_uncondf[which(bm_uncondf == "    NA", arr.ind = TRUE)] <- "      "
-bm_uncondf[which(bm_uncondf == "   NA", arr.ind = TRUE)] <- "     "
-bm_uncondf[which(bm_uncondf == "  NA", arr.ind = TRUE)] <- "    "
-bm_uncondf[which(bm_uncondf == " NA", arr.ind = TRUE)] <- "   "
-bm_uncondf[which(bm_uncondf == "NA", arr.ind = TRUE)] <- "    "
-bm_uncondf_tbl<-kable(bm_uncondf, format = "rst", caption="Best Overall Models for MPG")
-print(bm_uncondf_tbl)
+  
+```{r format_and_print_model_sel_df, comment="", echo = FALSE, results = 'asis'}
+# clean up output of `dredge` to be presented in a table
+prnt_model_sel_table <- function(model_selection_df, n_rows = 10, metric_name, caption){
+        best_models_df <- subset(as.data.frame(model_selection_df), 
+                                select = -c(logLik, weight))[1:n_rows,]      
+        names(best_models_df)[names(best_models_df) == "(Intercept)"] <- "(Int)"
+        best_models_df[,"(Int)"] <- round(best_models_df[,"(Int)"],1)
+        best_models_df[,c("disp")] <- round(best_models_df[,"disp"],3)
+        best_models_df[,c("lkocv_iter","delta")] <- 
+                round(best_models_df[,c("lkocv_iter","delta")],4)
+        best_models_df[,c("am", "carb", "cyl","vs", "wt")] <- 
+                round(best_models_df[,c("am", "carb", "cyl","vs", "wt")], 2)
+        best_models_df[,c("disp","hp")] <- round(best_models_df[,c("disp","hp")],3)
+        best_models_df <- format(best_models_df)
+        remove_NAs_w_whitespace <- function(x){
+                x <- gsub(" ","", x, fixed = TRUE)
+                gsub("NA","",x, fixed = TRUE)
+        }
+        best_models_df <- as.data.frame(apply(best_models_df,2,
+                                        remove_NAs_w_whitespace))
+        names(best_models_df)[names(best_models_df) == "lkocv_iter"] <- metric_name 
+        
+        # `kable` needs package "knitr"
+        if (!"knitr" %in% row.names(installed.packages())) install.packages("knitr")
+        library("knitr")
+        kable(best_models_df, caption = caption)
+}
 ```
-We see above that models involving `am` do not appear until rank 5 and below. However, 3 of these occur at $delta < 2$, generally considered to be within the margin of error. But, given **(A)**, it is prudent to add the top model overall, involving only `cyl` and `wt`, to the results presented to *Motor Trend*. Compared to the model containing `am`, it has one fewer parameter - therefore less likely to fall victim to overfitting, and only slightly lower $R^2$, equal to `r round(100*summary(bestoverallmodel <- lm(mpg ~ cyl + wt, mtcars))$r.squared, 0)`%.  Also, the ratios of *Std. Errors* to *Estimates* make all coefficients appear significant.  This model implies, though, that none of the variance in MPG is really due to transmission type, but to the combined effect of # of cylinders and weight.  
+
+### Model Investigation: Leave K-out Cross Validation
+
+#### Eight-Fold Cross Validation
+
+```{r model_selection_l4o, eval=FALSE, comment="", message=FALSE, results='hide', cache = TRUE}
+assign(x = "n", value = 0, envir = .GlobalEnv) # for running as RStudio NB/console 
+n_iter <- 25
+rseed <- 19720921
+k <- 4
+model_sel_leave4_out_df <- dredge(globalmodel, rank = lkocv_iter)
+prnt_model_sel_table(model_sel_leave4_out_df, metric_name = "1-Rsq_l4ocv", 
+                  caption = "Best Overall Models for MPG (L4OCV)")
+```
+
+```{r save_leave4_out_results, eval = FALSE, echo = FALSE}
+save(model_sel_leave4_out_df, 
+     file = paste("C:/Users/clarkpa.AUTH/Box Sync/R/datasciencecoursera",
+        "regmods/Course_Project/model_sel_leave4_out_19720921_df.RData", sep = "/"))
+```
+  
+#### Leave One Out Cross Validation  
+  
+```{r model_selection_loocv, comment="", message=FALSE, cache = TRUE, results='hide'}
+assign(x = "n", value = 0, envir = .GlobalEnv)
+metric_name <- "1-Rsq_loocv"
+caption <- "Best Overall Models for MPG (LOOCV)"
+rseed <- 19720921
+k <- 1
+n_iter <- 1
+model_sel_leave1_out_df <- dredge(globalmodel, rank = lkocv_iter)
+```
+```{r print_leave1_out_tbl} 
+prnt_model_sel_table(model_sel_leave1_out_df, metric_name = "1-Rsq_loocv",
+                     caption = caption)
+```
+    
+```{r save_leave1_out_results, eval = TRUE, echo = FALSE}
+save(model_sel_leave1_out_df, 
+     file = paste("C:/Users/clarkpa.AUTH/Box Sync/R/datasciencecoursera",
+                "regmods/Course_Project/model_sel_leave1_out_df.RData", sep = "/"))
+```
+  
+#### Four-Fold Cross Validation 
+  
+```{r model_selection_l8o, eval=TRUE, comment="", message=FALSE, results='hide', cache = TRUE}
+assign(x = "n", value = 0, envir = .GlobalEnv) # for running as RStudio NB/console 
+n_iter <- 50
+rseed <- 20101008
+k <- 8
+model_sel_leave8_out_df <- dredge(globalmodel, rank = lkocv_iter)
+```
+  
+
+```{r model_prnt_l8o, comment = ""}
+prnt_model_sel_table(model_sel_leave8_out_df, metric_name = "1-Rsq_l8ocv", 
+                  caption = "Best Overall Models for MPG (L8OCV)")
+```
   
   
-```{r coeftable_best_uncon, echo = FALSE, comment=""}
-cotbls_uncon <- coefTable(best_unconmodels)
-round(cotbls_uncon[["261"]][,1:2], 2)
+```{r save_leave8_out_results, eval = TRUE, echo = FALSE}
+save(model_sel_leave8_out_df, 
+     file = paste("C:/Users/clarkpa.AUTH/Box Sync/R/datasciencecoursera",
+        "regmods/Course_Project/model_sel_leave8_out_20101008_df.RData", sep = "/"))
+```
+
+We see above that models involving `am` do not appear until rank 4 and below. But, given **(A)**, it is prudent to add the top model overall, involving `carb`, `cyl`, and `wt`, to the results presented to *Motor Trend*. Compared to the model containing `am`, it has one fewer parameter - therefore less likely to fall victim to overfitting, and only slightly lower $R^2$, equal to `r round(100*summary(best_model <- lm(mpg ~ carb + cyl + wt, mtcars))$r.squared, 0)`%.  Also, the ratios of *Std. Errors* to *Estimates* make all coefficients appear significant.  This model implies, though, that none of the variance in MPG is really due to transmission type, but to the combined effect of # of carburetors, cylinders, and weight.  
+  
+  
+```{r coeftable_best_model, echo = FALSE, comment="", eval = FALSE}
+cotbls <- coefTable(model_sel_leave4_out_df)
+kable(round(cotbls[[rownames(model_sel_leave4_out_df)[[1]]]][,1:2], 2),
+      caption = "Coefficients of Best Overall Model")
 ```
 
 ## Model Diagnostics
 
 We run base R's standard plots in **Figure 4**.  Though the smoother line in *Residuals vs Fitted* shows curvature, pointing to possible quadratic terms, the trend is not pronounced except for the 3 labeled points (*Toyota Corolla, Fiat 128,* and *Chrysler Imperial*). These have notably higher MPG than the trend. *Normal Q-Q*  shows a somewhat right skewed distribution beyond 1 normal quantile. But the deviations are not extreme, except for the 3 labeled points, and the lowest.  The lowest, given by the code below, is *Mazda RX4*.
 ```{r non_normal_pt, comment="", results='hide'}
-bestmodel<-lm(mpg~am+hp+wt,mtcars); row.names(mtcars)[which.min(bestmodel$residuals)]
+best_am_model <- lm(mpg~am+hp+vs+wt,mtcars)
+row.names(mtcars)[which.min(best_am_model$residuals)]
 ```
 *Scale-Location* shows some heteroskedasticity.  In *Residuals vs Leverage*, all points are inside 0.5 *Cook's distance*, indicating stable $\beta$s.  Finally, from package `car`, we use `vif()` to calculate the Variance Inflation Factors and evaluate collinearity. All are under 5, causing no alarm (code suppressed to conserve space). VIFs:
-```{r vifs, echo = FALSE, comment=""}
+```{r vifs, echo = FALSE, comment="", results = 'asis'}
 if (!"car" %in% row.names(installed.packages())) {install.packages("car")}
-library(car); round(vif(bestmodel),2)
+library(car)
+kable(t(round(vif(best_am_model),2)), 
+      caption = "VIFs for Best Model Including Transmission Type")
 ```
-Given, especially, the heteroskedasticity, we examine the diagnostics for the top model overall, too (**Figure 5**, `mpg ~ cyl + wt`).  It does not appear markedly better anywhere, and it appears slightly worse on the **Normal Q-Q** evaluation.
+  
+Given, especially, the heteroskedasticity, we examine the diagnostics for the top model overall, too (**Figure 5**, `mpg ~ carb + cyl + wt`).  It does not appear markedly better anywhere, and it appears slightly worse on the **Normal Q-Q** evaluation.
 
 
 # Figures
-Plots provide guidance on whether to treat integer variables as continuous or factor.
+
+## Treatment of Integer-Valued Variables  
+Plots of integer vs. continuous-valued variables provide guidance on whether to treat integer variables as continuous or factor.  Variable `gear` behaves as a factor: continuous-valued functions do not vary in linear relationship.   
 ```{r plot_integer_vars, fig.cap="Plot of continuous vs. factor variables in mtcars data"}
 data(mtcars)
-intplotsdf <- data.frame(mpg=mtcars$mpg, hp=mtcars$hp, cyl=mtcars$cyl, carb=mtcars$carb,
-              gear=mtcars$gear, qsec=mtcars$qsec)
-if (!"tidyr" %in% rownames(installed.packages())) {install.packages("tidyr")}
+int_plots_df <- data.frame(mpg=mtcars$mpg,hp=mtcars$hp,cyl=mtcars$cyl,carb=mtcars$carb,
+                gear=mtcars$gear, qsec=mtcars$qsec)
+if (!"tidyr" %in% rownames(installed.packages())) install.packages("tidyr")
 library(tidyr)
-intplotsdf <- gather(data = intplotsdf, key = x_variable, 
-                     value = x_value, -mpg, -hp, -qsec)
-intplotsdf <- gather(data = intplotsdf, key = y_variable, 
-                     value = y_value, -x_variable, -x_value)
-if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+int_plots_df <- gather(data = int_plots_df, key = x_var, value = x, -mpg, -hp, -qsec)
+int_plots_df <- gather(data = int_plots_df, key = y_var, value = y, -x_var, -x)
+if (!"ggplot2" %in% rownames(installed.packages())) install.packages("ggplot2")
 library(ggplot2)
-g_integer_vars <- ggplot(intplotsdf, aes(x=x_value,y=y_value)) + 
-                         facet_grid(y_variable ~ x_variable, scales = "free") +
+g_integer_vars <- ggplot(int_plots_df, aes(x=x,y=y)) + 
+                  facet_grid(y_var ~ x_var, scales = "free") +
                   geom_point() + geom_smooth(method = "lm") +
-labs(title = "'gear' behaves as a factor, 'carb' and 'cyl' can be treated as continous")
+labs(title = "Variable 'gear' can be treated as a factor, 'carb' & 'cyl' as continous")
 print(g_integer_vars)
 ```
 
@@ -178,39 +381,76 @@ mtcars$am <- factor(x=as.character(mtcars$am),levels=c("0","1"),labels=c("A","M"
 mtcars$gear <- as.factor(mtcars$gear)
 mtcars$qsec <- NULL
 ```
+  
+  
+ 
 
-The pairs plot  shows many strong correlations.
-```{r pairs_plot, cache = TRUE, message = FALSE, fig.cap="Pairs Plot of Motor Trend Cars Database"}
+## Pairs plot for mtcars dataset  
+The pairs plot  shows many strong correlations.  
+
+```{r pairs_plot, cache = TRUE, message = FALSE, fig.height=4, fig.cap="Pairs Plot of Motor Trend Cars Dataset", fig.height = 6}
 if (!"GGally" %in% rownames(installed.packages())) {install.packages("GGally")}
 library(GGally)
-g_pairs <- ggpairs(mtcars, mapping=aes(color=am, alpha = 0.7),lower = list(continuous = 
-                                                        wrap(ggally_smooth, size = 1)),
+g_pairs <- ggpairs(mtcars, mapping=aes(color=am, alpha = 0.7),
+           lower = list(continuous = wrap(ggally_smooth, size = 1)),
            diag = list(continuous = "barDiag"), upper = list(continuous = 
-           wrap(ggally_cor,size=2)), axisLabels = 'none')
-           
+           wrap(ggally_cor,size=2, mapping=aes(color=am,alpha=1))), axisLabels = 'none')
 print(g_pairs)
 ```
+  
+  
+  
 
-The violin plot depicts strong association between transmission type and `mpg`.
-```{r violin_plot, fig.cap="Violin plot of MPG vs. Transmission type", message = FALSE, fig.height=3.5}
-g_violin <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() + 
-        geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
-        stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(fill = am)) +
-        scale_fill_discrete(name="Mean MPG")+
-        labs(title = "Average MPG for manual transmissions is significantly higher")
+## Violin Plot for Manual vs. Automatic Transmissions  
+The violin plot depicts association between transmission type and `mpg`.  
+
+```{r violin_plot, fig.cap="Violin plot of MPG vs. Transmission type", message = FALSE}
+g_violin <- ggplot(mtcars, aes(x = am, y = mpg)) +  
+            geom_violin() +
+            # geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+            stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(fill = am)) +
+            scale_fill_discrete(name="Mean MPG")+
+            labs(title = "Average MPG for manual transmissions is significantly higher")
 print(g_violin)
 ```
   
+
+```{r hist, fig.cap="Dot plot of MPG vs. Transmission type", message = FALSE, fig.height=3.5, include=FALSE, eval=FALSE}
+g_hist <- ggplot(mtcars, aes(x = mpg, fill = am)) + 
+          geom_histogram(alpha = 0.2, position = "identity") +
+          labs(title = "Average MPG for manual transmissions is significantly higher")
+print(g_hist)
+```  
   
-```{r diagnostics, echo = FALSE, fig.cap = "Standard Model Diagnostic Plots", fig.height=6, message=FALSE}
-par(mfrow = c(2,2))
-plot(bestmodel)
+
+## Pairs Plot for Variables of Best Constrained and Unconstrained Models  
+
+```{r model_pairs_plot, cache = TRUE, message = FALSE, fig.cap="Pairs Plot of Variables of Best Constrained and Unconstrained Models", fig.height = 6}
+g_model_pairs <- ggpairs(mtcars[,c("mpg","hp","am","carb","cyl","vs","wt")], 
+                 mapping=aes(color=am, alpha = 0.7),
+                 upper = list(continuous = wrap(ggally_smooth, size = 1)),
+                 diag = list(continuous = "barDiag"), lower = list(continuous = 
+                 wrap(ggally_cor, size=3, mapping=aes(color=am,alpha=1))), 
+                 axisLabels = 'none')
+print(g_model_pairs)
 ```
-Figure 4: Base R's standard diagnostic plots guide our eye to potential problems.  
   
-```{r diagnostics_best_overall_model, echo = FALSE, fig.cap = "Standard Model Diagnostic Plots: Best Overall Model", fig.height=6, message=FALSE}
+  
+
+## Model Diagnostics  
+
+```{r diagnostics, echo = FALSE, fig.cap = "Diagnostic Plots - Best Model that Includes Transmission Type", fig.height=6, message=FALSE}
 par(mfrow = c(2,2))
-plot(bestoverallmodel)
+plot(best_am_model)
 ```
-Figure 5: Standard diagnostics plots for unconstrained best model.  
   
+ 
+  
+```{r diagnostics_best_overall_model, echo = FALSE, fig.cap = "Diagnostic Plots - Best Overall (Unconstrained) Model", fig.height=6, message=FALSE}
+par(mfrow = c(2,2))
+plot(best_model)
+```
+  
+
+  
+# Bibliography

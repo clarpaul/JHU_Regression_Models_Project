@@ -1,0 +1,512 @@
+summary(best_3)$coef
+summary(best_4)$coef
+bestlm <- bestglm(mtcars, IC = "AIC", TopModels = 20)
+topmods <- bestglm$BestModels
+topmods <- bestlm$BestModels
+topmods
+best_5 <- lm(mpg ~ am + cyl + hp + wt + carb, mtcars)
+summary(best5)$coef
+summary(best_5)$coef
+summary(best_2)
+summary(best_1)
+data(mtcars)
+mpg <- mtcars$mpg
+mtcars$mpg <- NULL
+mtcars$mpg <- mpg
+head(mtcars)
+rm(list = ls())
+data(mtcars)
+mpg <- mtcars$mpg
+mtcars$mpg <- NULL
+mtcars$mpg <- mpg
+head(mtcars)
+am <- mtcars$am
+mtcars$am <- NULL
+mtcars <- cbind(am, mtcars)
+head(mtcars)
+best_lms <- bestglm(mtcars, IC = "AIC", TopModels = 20)
+bestmatrix <- best_lms$BestModels
+bestmatrix
+mtcars$qsec <- NULL
+best_lms <- bestglm(mtcars, IC = "AIC", TopModels = 20)
+bestmatrix <- best_lms$BestModels
+bestmatrix
+3best <- lm(mpg ~ ., mtcars[, c(t(bestmatrix[3, 1:9]),TRUE)])
+best3 <- lm(mpg ~ ., mtcars[, c(t(bestmatrix[3, 1:9]),TRUE)])
+summary(best3)$coef
+best5 <- lm(mpg ~ ., mtcars[, c(t(bestmatrix[5, 1:9]),TRUE)])
+best6 <- lm(mpg ~ ., mtcars[, c(t(bestmatrix[6, 1:9]),TRUE)])
+best7 <- lm(mpg ~ ., mtcars[, c(t(bestmatrix[7, 1:9]),TRUE)])
+best12 <- lm(mpg ~ ., mtcars[, c(t(bestmatrix[12, 1:9]),TRUE)])
+best13 <- lm(mpg ~ ., mtcars[, c(t(bestmatrix[13, 1:9]),TRUE)])
+summary(best5)$coef
+summary(best6)$coef
+summary(best7)$coef
+summary(best12)$coef
+summary(best13)$coef
+"MuMIn" %in% row.names(installed.packages())
+install.packages("MuMIn")
+library(MuMIn)
+fullmod <- lm(mpg ~., mtcars)
+summary(fullmod)$coef
+dredgebest <- dredge(fullmod, subset["am"] == TRUE)
+dredgebest <- dredge(fullmod, subset = ~ am)
+?lm
+fullmod <- lm(mpg ~., data = mtcars, na.action = na.omit )
+dredgebest <- dredge(fullmod, subset = ~ am)
+summary(fullmod)
+fullmod <- lm(mpg ~., data = mtcars, na.action = NULL )
+dredgebest <- dredge(fullmod, subset = ~ am)
+fullmod <- lm(mpg ~., data = mtcars, na.action = na.exclude )
+dredgebest <- dredge(fullmod, subset = ~ am)
+fullmod <- lm(mpg ~., data = mtcars, na.action = na.fail )
+dredgebest <- dredge(fullmod, subset = ~ am)
+dredgebest
+dredgebest1 <- lm(mpg ~ am + hp + wt, mtcars)
+summary(dredgebest1)$coef
+dredgebest2 <- lm(mpg ~ am + carb + cyl + wt, mtcars)
+summary(dredgebest2)$coef
+?mtcars
+2^20
+2^10
+2^9
+browseVignettes("MuMIn")
+browseVignettes(MuMIn)
+"MuMIn" %in% row.names(installed.packages())
+help(package = MuMIn)
+plot(dredgebest)
+par(mar = c(3,5,6,4))
+plot(dredgebest)
+2^(9+36)
+round(2^(9+36),2)
+str(dredgebest)
+coefTables(dredgebest)
+coefTable(dredgebest)
+head(dredgebest)
+?t.test
+str(mtcars)
+with(mtcars, mean(mpg[am = 1]) - mean(mpg[am = 0]))
+with(mtcars, mpg[am == 1])
+with(mtcars, mean(mpg[am == 1]) - mean(mpg[am == 0]))
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "greater")
+t_test$p.value
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+t_test$p.value
+t_test$conf.int
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "lesser")
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+paste0(round(100*(t_test$p.value),2), "%")
+t_test$conf.int[1]
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+cat("p-value = ", round(100*(t_test$p.value),2), " %")
+t_test$conf.int[1]
+str(t_test$conf.int)
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+cat("p-value =", round(100*(t_test$p.value),2), "%\n")
+t_test$conf.int[1:2]
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+cat(sep = "", "p-value = ", round(100*(t_test$p.value),2), "%\n")
+t_test$conf.int[1:2]
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+cat(sep = "", "p-value = ", round(100*(t_test$p.value),2), "%\n")
+cat(sep = "", "conf.int = ", -t_test$conf.int[1:2],"\n")
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+cat(sep = "", "p-value = ", round(100*(t_test$p.value),2), "%\n")
+cat(sep = "", "conf.int = ", -t_test$conf.int[2], " to ", -t_test$conf.int[1],"\n")
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+cat(sep = "", "p-value = ", round(100*(t_test$p.value),2), "%\n")
+cat(sep = "", "conf.int = ", round(-t_test$conf.int[2],2), " to ", -t_test$conf.int[1],"\n")
+mpg_delta_grp <- with(mtcars, mean(mpg[am = 'manu']) - mean(mpg[am = 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin()
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+data(mtcars)
+mtcars$vs <- factor(x = as.character(mtcars$vs), levels = c("0","1"), labels = c("v","s"))
+mtcars$am <- factor(x = as.character(mtcars$am), levels = c("0","1"), labels = c("auto","manu"))
+mpg_delta_grp <- with(mtcars, mean(mpg[am = 'manu']) - mean(mpg[am = 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin()
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am = 'manu']) - mean(mpg[am = 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+geom_hline(mean(mpg[am = 'manu'])) + geom_hline(mean(mpg[am = 'auot']))
+mpg_delta_grp <- with(mtcars, mean(mpg[am = 'manu']) - mean(mpg[am = 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+geom_hline(y = mean(mpg[am = 'manu'])) + geom_hline(y = mean(mpg[am = 'auot']))
+print(g)
+mpg_delta_grp <- with(mtcars, mean(mpg[am = 'manu']) - mean(mpg[am = 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+geom_hline(yintercept =  = mean(mpg[am = 'manu'])) + geom_hline(yintercept = mean(mpg[am = 'auot']))
+mpg_delta_grp <- with(mtcars, mean(mpg[am = 'manu']) - mean(mpg[am = 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+geom_hline(yintercept = mean(mpg[am = 'manu'])) +
+geom_hline(yintercept = mean(mpg[am = 'auot']))
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am = 'manu']) - mean(mpg[am = 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+geom_hline(yintercept = mean(mpg[am = 'manu']), data = mtcars) +
+geom_hline(yintercept = mean(mpg[am = 'auot']), data = mtcars)
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am = 'manu']) - mean(mpg[am = 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+geom_hline(yintercept = mean(mpg[am = 'manu']), data = mtcars) +
+geom_hline(yintercept = mean(mpg[am = 'auto']), data = mtcars)
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am = 'manu']) - mean(mpg[am = 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() + geom_jitter(height = 0)
+geom_hline(yintercept = mean(mpg[am = 'manu']), data = mtcars) +
+geom_hline(yintercept = mean(mpg[am = 'auto']), data = mtcars)
+mpg_delta_grp <- with(mtcars, mean(mpg[am = 'manu']) - mean(mpg[am = 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() + geom_jitter(height = 0)
+#    geom_hline(yintercept = mean(mpg[am = 'manu']), data = mtcars) +
+#    geom_hline(yintercept = mean(mpg[am = 'auto']), data = mtcars)
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+with(mtcars, mean(mpg[am = 'auto')]
+with(mtcars, mean(mpg[am = 'auto'))
+with(mtcars, mean(mpg[am = 'auto']))
+with(mtcars, mpg[am = "auto"])
+str(mtcars$mpg)
+str(mpg$am)
+str(mtcars$am)
+mtcars$am
+mpg_delta_grp <- with(mtcars, mean(mpg[am = 'manu']) - mean(mpg[am = 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() + geom_jitter(height = 0)
+geom_hline(yintercept = mean(mpg[am == 'manu'])) +
+geom_hline(yintercept = mean(mpg[am == 'auto']))
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+mpg_delta_grp
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() + geom_jitter(height = 0)
+geom_hline(yintercept = mean(mpg[am == 'manu']), data = mtcars) +
+geom_hline(yintercept = mean(mpg[am == 'auto']), data = mtcars)
+with(mtcars, mean(mpg[am == "manu"]))
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() + geom_jitter(height = 0)+
+stat_summary(fun.y=mean, geom="point", shape=23, size=2)
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+geom_jitter(shape=16, position=position_jitter(0.2))+
+stat_summary(fun.y=mean, geom="point", shape=23, size=2)
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+geom_jitter(shape=16, position=position_jitter(0.2))+
+stat_summary(fun.y=mean, geom="point", shape=23, size=2, color = "red")
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+geom_jitter(shape=16, position=position_jitter(0.2))+
+stat_summary(fun.y=mean, geom="point", shape=23, size=2, color = "red", fill = "red")
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1)
+stat_summary(fun.y=mean, geom="point", shape=23, size=2, color = "red", fill = "red")
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=2, color = "red", fill = "red")
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=2, color = "red", fill = "red")
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, color = "red", fill = "red")+
+labs(title = "MPG vs Transmission Type (Red dots = Means)")
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, color = "mymean", fill = "mymean")+
+labs(title = "MPG vs Transmission Type") +
+scale_colour_manual(name="Dot Color", values =c(mymean = "red"))
+print(g)
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, color = mymean, fill = mymean)+
+labs(title = "MPG vs Transmission Type") +
+scale_colour_manual(name="Dot Color", values =c(mymean = "red"))
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(color = am))+
+labs(title = "MPG vs Transmission Type") # +
+#scale_colour_manual(name="Dot Color", values =c(mymean = "red"))
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(color = am, fill = am))+
+labs(title = "MPG vs Transmission Type") # +
+#scale_colour_manual(name="Dot Color", values =c(mymean = "red"))
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(color = am, fill = am))+
+theme(legend.title = "Mean MPG")
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(color = am, fill = am))+
+theme(legend.title = "Mean MPG") +
+labs(title = "MPG vs Transmission Type") # +
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(color = am, fill = am))+
+theme(legend.title = element_text("Mean MPG")) +
+labs(title = "MPG vs Transmission Type") # +
+#scale_colour_manual(name="Dot Color", values =c(mymean = "red"))
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(color = am, fill = am), name = "Mean MPG")+
+#theme(legend.title = element_text("Mean MPG")) +
+labs(title = "MPG vs Transmission Type") # +
+#scale_colour_manual(name="Dot Color", values =c(mymean = "red"))
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(color = am, fill = am)) +
+scale_fill_discrete(name="Experimental\nCondition")+
+#theme(legend.title = element_text("Mean MPG")) +
+labs(title = "MPG vs Transmission Type") # +
+#scale_colour_manual(name="Dot Color", values =c(mymean = "red"))
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+# geom_jitter(shape=16, position=position_jitter(0.2))+
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(fill = am)) +
+scale_fill_discrete(name="Mean")+
+#theme(legend.title = element_text("Mean MPG")) +
+labs(title = "MPG vs Transmission Type") # +
+#scale_colour_manual(name="Dot Color", values =c(mymean = "red"))
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(fill = am)) +
+scale_fill_discrete(name="Mean MPG")+
+labs(title = "MPG vs Transmission Type")
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(fill = am)) +
+scale_fill_discrete(name="Mean MPG")+
+labs(title = "Cars with manual transmissions have significantly higher mpg")
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+cat(sep = "", "mean difference = ", mpg_delta_grp, "\n", "p-value = ",
+round(100*(t_test$p.value),2), "%\n", "95% ", conf.int = ",
+round(-t_test$conf.int[2],2), " to ", -t_test$conf.int[1],"\n")
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+cat(sep = "", "mean difference = ", mpg_delta_grp, "\n", "p-value = ",
+round(100*(t_test$p.value),2), "%\n", "95% ", "conf.int = ",
+round(-t_test$conf.int[2],2), " to ", -t_test$conf.int[1],"\n")
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+cat(sep = "", "mean difference = ", round(mpg_delta_grp,2), "\n", "p-value = ",
+round(100*(t_test$p.value),2), "%\n", "95% ", "conf.int = ",
+round(-t_test$conf.int[2],2), " to ", -t_test$conf.int[1],"\n")
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+cat(sep = "", "mean difference = ", round(mpg_delta_grp,2)," mpg", "\n", "p-value = ",
+round(100*(t_test$p.value),2), "%\n", "95% ", "conf.int = ",
+round(-t_test$conf.int[2],2), " to ", -t_test$conf.int[1],"\n")
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+cat(sep = "", "mean mpg by which manual exceeds automatic transmission = ", round(mpg_delta_grp,2)," mpg", "\n", "p-value = ",
+round(100*(t_test$p.value),2), "%\n", "95% ", "conf.int = ",
+round(-t_test$conf.int[2],2), " to ", -t_test$conf.int[1],"\n")
+# use lesser; t.test compares the lower factor value to the higher one
+t_test <- t.test(mpg ~ am, data = mtcars, alternative = "less")
+cat(sep = "", "Mean mpg by which manual exceeds automatic transmission = ", round(mpg_delta_grp,2), "\n", "p-value = ",
+round(100*(t_test$p.value),2), "%\n", "95% ", "conf.int = ",
+round(-t_test$conf.int[2],2), " to ", -t_test$conf.int[1],"\n")
+mpg_delta_grp <- with(mtcars, mean(mpg[am == 'manu']) - mean(mpg[am == 'auto']))
+if (!"ggplot2" %in% rownames(installed.packages())) {install.packages("ggplot2")}
+library(ggplot2)
+g <- ggplot(mtcars, aes(x = am, y = mpg)) + geom_violin() +
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+stat_summary(fun.y=mean, geom="point", shape=23, size=4, aes(fill = am)) +
+scale_fill_discrete(name="Mean MPG")+
+labs(title = "Average MPG for manual transmissions is significantly higher")
+print(g)
+png("violin_plot.png")
+print(g)
+dev.off()
+?sprintf
+sprintf("%f", precision = 0, 2^(9+36))
+sprintf("%f", 0, 2^(9+36))
+sprintf("%f", 2^(9+36))
+sprintf("%.0f", 2^(9+36))
+?format
+format(2^(9+36), digits = 0)
+format(2^(9+36), scientific = FALSE)
+format(2^(9+36), scientific = FALSE, big.mark = ",")
+format(2^(9+36)/10e12, scientific = FALSE, big.mark = ",")
+2^(9+36)
+savehistory("C:/Users/clarkpa.AUTH/Box Sync/R/datasciencecoursera/regmods/Course_Project/history.history")

@@ -1,0 +1,18 @@
+Regression on mtcars dataset
+
+Model inference
+- Best subsets solution (show Wikipedia equation demonstrating how it relates to Lasso; find reference)
+  A) Cross-validate variable choice (calculate cross-validation MSE for each subset of variables)
+  B) Cross-validate only the number of variables, not choice (calc. X-validation MSE for each num of vars; precise subset per fold chosen for min R-squared)
+- Lasso solution
+  - Determine lambda that has smallest cross-validation MSE
+  - Use profile of coefficients vs. lambda on full dataset to determine exact variables based on X-validated lambda
+- AICc solution
+
+Coefficient inference
+- Bootstrap of best subsets
+  - Instead of running X-validation on original dataset, generate many bootstrapped samples, and run X-validation many times, once per bootstrapped sample
+  - This will generate many choices of optimal # vars
+  - Use choice of optimal # vars (from X-validation) on full bootstrapped dataset to choose precise coefficients that minimize R-squared
+  - Note that in some cases, different choices for variables will be made than in full data-set, and ZERO will be the value for final model coefficients
+  - Note that instead of doing things this way, could use lamda-objective function from Wikipedia and an R-package (if one exists) to determine Lambda curve on full dataset (with 'hard' thresholding of variables)
